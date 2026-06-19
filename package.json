@@ -18,5 +18,10 @@
   "bugs": {
     "url": "https://github.com/tq197040-code/game-shop/issues"
   },
-  "homepage": "https://github.com/tq197040-code/game-shop#readme"
+  "homepage": "https://github.com/tq197040-code/game-shop#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "nodemailer": "^9.0.1"
+  }
 }
