@@ -9,11 +9,11 @@ app.use(express.json());
 app.use(cors());
 
 const SECRET = "GAME_SECRET_2026";
-const ADMIN_EMAIL = "admin_cua_ban@gmail.com";
+const ADMIN_EMAIL = "tq197040@gmail.com";
 const BANK_INFO = {
   bank: "Vietcombank",
-  account: "1234567890",
-  name: "NGUYEN VAN A"
+  account: "1040505272",
+  name: "KIEU QUANG THAI"
 };
 
 // Đọc/ghi database
