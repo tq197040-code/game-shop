@@ -28,7 +28,7 @@ function saveDB(db) {
 // Gmail
 const mailer = nodemailer.createTransport({
   service: "gmail",
-  auth: { user: ADMIN_EMAIL, pass: "xtxt lepn lzaq zods" }
+  auth: { user: ADMIN_EMAIL, pass: "xtxtlepnlzaqzods" }
 });
 
 function token(orderId) {
