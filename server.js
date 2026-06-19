@@ -162,5 +162,8 @@ app.get("/reject", (req, res) => {
   `);
 });
 
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/game.html");
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server chạy tại :" + PORT));
