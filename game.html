@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Shop Chip</title>
+  <style>
+    body { font-family: sans-serif; max-width: 420px; margin: 40px auto; padding: 0 16px; }
+    input, button { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: 1px solid #ddd; font-size: 15px; box-sizing: border-box; }
+    button { background: #7c3aed; color: #fff; border: none; cursor: pointer; font-weight: bold; }
+    button:hover { background: #6d28d9; }
+    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin: 8px 0; cursor: pointer; transition: border-color .2s; }
+    .card:hover { border-color: #7c3aed; }
+    .card.selected { border-color: #7c3aed; background: #f5f3ff; }
+    .chip-count { font-size: 22px; font-weight: bold; color: #7c3aed; }
+    .price { color: #666; font-size: 14px; }
+    .alert { padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 14px; }
+    .alert.green { background: #dcfce7; color: #166534; }
+    .alert.red   { background: #fee2e2; color: #991b1b; }
+    .alert.blue  { background: #eff6ff; color: #1e40af; }
+    .bank-info { background: #f5f3ff; border-radius: 10px; padding: 14px; font-size: 14px; line-height: 2; }
+    .hidden { display: none; }
+    #chip-display { font-size: 18px; font-weight: bold; color: #7c3aed; }
+  </style>
+</head>
+<body>
+
+<!-- Đăng nhập -->
+<div id="login-section">
+  <h2>Đăng nhập</h2>
+  <input id="username" placeholder="Tên tài khoản">
+  <input id="password" type="password" placeholder="Mật khẩu">
+  <button onclick="login()">Đăng nhập</button>
+  <button onclick="register()" style="background:#6b7280;margin-top:4px">Đăng ký</button>
+  <div id="login-msg"></div>
+</div>
+
+<!-- Shop chip -->
+<div id="shop-section" class="hidden">
+  <h2>Shop Chip</h2>
+  <p>Xin chào <b id="user-display"></b> — Chip: <span id="chip-display">0</span></p>
+
+  <h3>Chọn gói chip</h3>
+  <div class="card" onclick="selectPack(this, 100, 10000)">
+    <div class="chip-count">100 chip</div>
+    <div class="price">10.000đ</div>
+  </div>
+  <div class="card" onclick="selectPack(this, 500, 45000)">
+    <div class="chip-count">500 chip <span style="color:#16a34a;font-size:13px">Tiết kiệm 10%</span></div>
+    <div class="price">45.000đ</div>
+  </div>
+  <div class="card" onclick="selectPack(this, 1000, 80000)">
+    <div class="chip-count">1.000 chip <span style="color:#16a34a;font-size:13px">Tiết kiệm 20%</span></div>
+    <div class="price">80.000đ</div>
+  </div>
+  <div class="card" onclick="selectPack(this, 5000, 350000)">
+    <div class="chip-count">5.000 chip <span style="color:#dc2626;font-size:13px">HOT</span></div>
+    <div class="price">350.000đ</div>
+  </div>
+
+  <button onclick="buyChip()" style="margin-top:12px">Mua chip</button>
+  <div id="shop-msg"></div>
+
+  <!-- Thông tin chuyển khoản (hiện sau khi đặt) -->
+  <div id="bank-section" class="hidden">
+    <h3>Chuyển khoản để xác nhận</h3>
+    <div class="bank-info">
+      <b>Ngân hàng:</b> <span id="b-bank"></span><br>
+      <b>Số tài khoản:</b> <span id="b-acc"></span><br>
+      <b>Tên:</b> <span id="b-name"></span><br>
+      <b>Số tiền:</b> <span id="b-amount"></span><br>
+      <b>Nội dung:</b> <span id="b-content" style="color:#7c3aed;font-weight:bold"></span>
+    </div>
+    <div class="alert blue">
+      Sau khi chuyển khoản, admin sẽ duyệt và chip được cộng tự động vào tài khoản của bạn.
+    </div>
+    <button onclick="checkChip()" style="background:#0369a1">Kiểm tra chip đã được cộng chưa</button>
+  </div>
+</div>
+
+<script>
+const API = "https://your-backend.up.railway.app";
+let currentUser = "";
+let selectedChip = 0;
+let selectedAmount = 0;
+
+function selectPack(el, chip, amount) {
+  document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+  el.classList.add("selected");
+  selectedChip = chip;
+  selectedAmount = amount;
+}
+
+async function register() {
+  const u = document.getElementById("username").value.trim();
+  const p = document.getElementById("password").value;
+  if (!u || !p) return showMsg("login-msg", "Nhập đầy đủ thông tin", "red");
+  const r = await fetch(`${API}/api/register`, {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ username: u, password: p })
+  }).then(r => r.json());
+  showMsg("login-msg", r.ok ? "Đăng ký thành công! Hãy đăng nhập." : r.msg, r.ok ? "green" : "red");
+}
+
+async function login() {
+  const u = document.getElementById("username").value.trim();
+  const p = document.getElementById("password").value;
+  const r = await fetch(`${API}/api/login`, {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ username: u, password: p })
+  }).then(r => r.json());
+  if (!r.ok) return showMsg("login-msg", r.msg, "red");
+  currentUser = u;
+  document.getElementById("login-section").classList.add("hidden");
+  document.getElementById("shop-section").classList.remove("hidden");
+  document.getElementById("user-display").textContent = u;
+  document.getElementById("chip-display").textContent = r.chip.toLocaleString("vi-VN");
+}
+
+async function buyChip() {
+  if (!selectedChip) return showMsg("shop-msg", "Hãy chọn một gói chip", "red");
+  const r = await fetch(`${API}/api/buy`, {
+    method: "POST", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ username: currentUser, amount: selectedAmount, chipAmount: selectedChip })
+  }).then(r => r.json());
+  if (!r.ok) return showMsg("shop-msg", r.msg, "red");
+  showMsg("shop-msg", "", "");
+  document.getElementById("b-bank").textContent   = r.bank.bank;
+  document.getElementById("b-acc").textContent    = r.bank.account;
+  document.getElementById("b-name").textContent   = r.bank.name;
+  document.getElementById("b-amount").textContent = selectedAmount.toLocaleString("vi-VN") + "đ";
+  document.getElementById("b-content").textContent = r.content;
+  document.getElementById("bank-section").classList.remove("hidden");
+}
+
+async function checkChip() {
+  const r = await fetch(`${API}/api/chip/${currentUser}`).then(r => r.json());
+  document.getElementById("chip-display").textContent = r.chip.toLocaleString("vi-VN");
+  showMsg("shop-msg", `Chip hiện tại: ${r.chip.toLocaleString("vi-VN")} chip`, "green");
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.className = `alert ${type}`;
+  el.textContent = text;
+  el.style.display = text ? "block" : "none";
+}
+</script>
+</body>
+</html>
